@@ -1,0 +1,6 @@
+/*
+  X-Content-Type-Options: nosniff
+
+/images/*
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000
