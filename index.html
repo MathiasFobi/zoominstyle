@@ -58,68 +58,15 @@
         </div>
     </section>
 
-    <!-- Active Wear Collection -->
-    <section class="max-w-7xl mx-auto px-4 py-16">
-        <h2 class="text-3xl font-bold mb-2">Active Wear</h2>
-        <p class="text-gray-600 mb-8">Stylish Athleisure</p>
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src="images/design5.png" alt="TROUBLE Performance Quarter-Zip Sweater" class="w-full h-full object-cover">
-                </div>
-                <h3 class="font-semibold">TROUBLE Performance Quarter-Zip Sweater</h3>
-                <p class="text-gray-600">From $38.00 USD</p>
-                <button class="mt-2 w-full bg-black text-white py-2 rounded hover:bg-gray-800">Add to Cart</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- WFH Collection -->
+    <!-- Products Section -->
     <section id="catalog" class="max-w-7xl mx-auto px-4 py-16">
-        <h2 class="text-3xl font-bold mb-2">WFH</h2>
+        <h2 class="text-3xl font-bold mb-2">Our Collection</h2>
         <p class="text-gray-600 mb-8">Bold messages that says everyone's thinking</p>
         
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Product 1 -->
-            <div class="product-card">
-                <div class="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src="images/design1.png" alt="This Meeting Could've Been an Email Tee" class="w-full h-full object-cover">
-                </div>
-                <h3 class="font-semibold">This Meeting Could've Been an Email Tee</h3>
-                <p class="text-gray-600">From $19.99 USD</p>
-                <button class="mt-2 w-full bg-black text-white py-2 rounded hover:bg-gray-800">Add to Cart</button>
-            </div>
-
-            <!-- Product 2 -->
-            <div class="product-card">
-                <div class="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src="images/design2.png" alt="BIG ZOOM ENERGY Tee" class="w-full h-full object-cover">
-                </div>
-                <h3 class="font-semibold">BIG ZOOM ENERGY Tee</h3>
-                <p class="text-gray-600">From $19.99 USD</p>
-                <button class="mt-2 w-full bg-black text-white py-2 rounded hover:bg-gray-800">Add to Cart</button>
-            </div>
-
-            <!-- Product 3 -->
-            <div class="product-card">
-                <div class="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src="images/design3.png" alt="Let's Take This Offline to a Bar Tee" class="w-full h-full object-cover">
-                </div>
-                <h3 class="font-semibold">Let's Take This Offline… to a Bar Tee</h3>
-                <p class="text-gray-600">From $19.99 USD</p>
-                <button class="mt-2 w-full bg-black text-white py-2 rounded hover:bg-gray-800">Add to Cart</button>
-            </div>
-
-            <!-- Product 4 -->
-            <div class="product-card">
-                <div class="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src="images/design4.png" alt="Adding Value by Nodding Silently Tee" class="w-full h-full object-cover">
-                </div>
-                <h3 class="font-semibold">ADDING VALUE BY NODDING SILENTLY Tee</h3>
-                <p class="text-gray-600">From $19.99 USD</p>
-                <button class="mt-2 w-full bg-black text-white py-2 rounded hover:bg-gray-800">Add to Cart</button>
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Products loaded via JS -->
+            <div class="text-center col-span-full py-8">
+                <p class="text-gray-500">Loading products...</p>
             </div>
         </div>
     </section>
@@ -157,25 +104,38 @@
     </footer>
 
     <script>
-        // Simple cart functionality
+        const API_URL = 'https://zoominstyle-medusa-production.up.railway.app';
         let cart = [];
-        function addToCart(productName, price) {
-            cart.push({ name: productName, price: price });
-            document.getElementById('cart-count').textContent = cart.length;
-            alert(`${productName} added to cart!`);
+
+        // Fetch and render products
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/api/products`);
+                const products = await response.json();
+                
+                const grid = document.getElementById('products-grid');
+                grid.innerHTML = products.map(p => `
+                    <div class="product-card">
+                        <div class="aspect-square bg-gray-100 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                            <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400?text=ZoomInStyle'">
+                        </div>
+                        <h3 class="font-semibold">${p.name}</h3>
+                        <p class="text-gray-600">From $${p.price.toFixed(2)} USD</p>
+                        <button class="mt-2 w-full bg-black text-white py-2 rounded hover:bg-gray-800" onclick="addToCart(${p.id}, '${p.name}', ${p.price})">Add to Cart</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('products-grid').innerHTML = '<p class="text-red-500 col-span-full text-center">Failed to load products</p>';
+            }
         }
 
-        // Add event listeners to buttons
-        document.querySelectorAll('button').forEach(btn => {
-            if (btn.textContent === 'Add to Cart') {
-                btn.addEventListener('click', () => {
-                    const product = btn.closest('.product-card');
-                    const name = product.querySelector('h3').textContent;
-                    const price = product.querySelector('p').textContent;
-                    addToCart(name, price);
-                });
-            }
-        });
+        function addToCart(id, name, price) {
+            cart.push({ id, name, price });
+            document.getElementById('cart-count').textContent = cart.length;
+            alert(`${name} added to cart!`);
+        }
+
+        loadProducts();
     </script>
 </body>
 </html>
